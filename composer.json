@@ -9,7 +9,7 @@
         }
     ],
     "require": {
-        "topthink/framework": "5.1.*",
+        "topthink/framework": "5.1.*"
     },
     "autoload": {
         "psr-4": {
