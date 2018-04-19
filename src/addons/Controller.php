@@ -52,7 +52,7 @@ class Controller extends \think\Controller
         $this->request = Container::get('request');
         $this->app     = Container::get('app');
         // 初始化配置信息
-        $this->config = $this->app['config']->pull('template') ?: $this->config;
+        $this->config = $this->app['config']->get('template.') ?: $this->config;
         // 处理路由参数
         $route = [
             $this->request->param('addon'),

@@ -40,10 +40,8 @@ Hook::add('app_init', function () {
         return;
     }
     // 当debug时不缓存配置
-    $config = config('debug') ? [] : Cache::get('addons', []);
+    $config = config('app_debug') ? [] : (array)cache('addons');
     if (empty($config)) {
-        // 读取addons的配置
-        $config = (array)Config::get('addons');
         // 读取插件目录及钩子列表
         $base = get_class_methods("\\think\\Addons");
         // 读取插件目录中的php文件
@@ -73,16 +71,17 @@ Hook::add('app_init', function () {
                 }
             }
         }
-        Cache::set($config, 'addons');
+        cache('addons', $config);
     }
-    Config::set($config, 'addons');
+    config('addons', $config);
 });
 
 // 闭包初始化行为
 Hook::add('action_begin', function () {
     // 获取系统配置
-    $data = config('debug') ? [] : Cache::get('hooks', []);
-    $addons = (array)Config::get('addons.hooks');
+    $data = config('app_debug') ? [] : Cache::get('hooks', []);
+    $config = config('addons');
+    $addons = isset($config['hooks']) ? $config['hooks'] : [];
     if (empty($data)) {
         // 初始化钩子
         foreach ($addons as $key => $values) {
@@ -94,7 +93,7 @@ Hook::add('action_begin', function () {
             $addons[$key] = array_filter(array_map('get_addon_class', $values));
             Hook::add($key, $addons[$key]);
         }
-        Cache::set('hooks', $addons);
+        cache('hooks', $addons);
     } else {
         Hook::import($data, false);
     }

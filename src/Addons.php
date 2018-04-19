@@ -64,7 +64,7 @@ abstract class Addons
         $this->app     = Container::get('app');
         // 初始化视图模型
         $this->view    = Container::get('view')->init(
-            array_merge($this->app['config']->pull('template'), $config)
+            array_merge($this->app['config']->get('template.'), $config)
         );
 
         // 控制器初始化
