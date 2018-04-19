@@ -8,6 +8,7 @@
             "email": "xiaobo.sun@qq.com"
         }
     ],
+    "minimum-stability": "dev",
     "require": {
         "topthink/framework": "5.1.*"
     },
