@@ -10,6 +10,7 @@
 // +----------------------------------------------------------------------
 namespace think\addons;
 
+use think\facade\Env;
 use think\facade\Request;
 use think\facade\Config;
 use think\Loader;
@@ -67,7 +68,7 @@ class Controller extends \think\Controller
         $this->addon = $convert ? strtolower(array_pop($route)) : array_pop($route);
 
         // 生成view_path
-        $view_path = ADDON_PATH . $this->addon . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR;
+        $view_path = Env::get('addons_path') . $this->addon . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR;
         // 重置配置
         Config::set('template.view_path', $view_path);
 

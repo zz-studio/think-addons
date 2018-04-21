@@ -18,18 +18,18 @@ use think\facade\Route;
 
 // 插件目录
 $appPath = (new App())->getAppPath();
-define('ADDON_PATH', dirname($appPath) . DIRECTORY_SEPARATOR . 'addons' . DIRECTORY_SEPARATOR);
-
+$addons_path = dirname($appPath) . DIRECTORY_SEPARATOR . 'addons' . DIRECTORY_SEPARATOR;
+Env::set('addons_path', $addons_path);
 // 定义路由
 Route::any('addons/execute/:addon-:control-:action', "\\think\\addons\\Route@execute");
 
 // 如果插件目录不存在则创建
-if (!is_dir(ADDON_PATH)) {
-    @mkdir(ADDON_PATH, 0777, true);
+if (!is_dir($addons_path)) {
+    @mkdir($addons_path, 0777, true);
 }
 
 // 注册类的根命名空间
-Loader::addNamespace('addons', ADDON_PATH);
+Loader::addNamespace('addons', $addons_path);
 
 // 闭包自动识别插件目录配置
 Hook::add('app_init', function () {
@@ -45,7 +45,7 @@ Hook::add('app_init', function () {
         // 读取插件目录及钩子列表
         $base = get_class_methods("\\think\\Addons");
         // 读取插件目录中的php文件
-        foreach (glob(ADDON_PATH . '*/*.php') as $addons_file) {
+        foreach (glob(Env::get('addons_path') . '*/*.php') as $addons_file) {
             // 格式化路径信息
             $info = pathinfo($addons_file);
             // 获取插件目录名

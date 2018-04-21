@@ -10,7 +10,7 @@
 // +----------------------------------------------------------------------
 namespace think;
 
-use think\facade\Config;
+use think\facade\Env;
 use think\facade\View;
 use think\Db;
 
@@ -53,7 +53,7 @@ abstract class Addons
     public function __construct()
     {
         // 获取当前插件目录
-        $this->addons_path = ADDON_PATH . $this->getName() . DIRECTORY_SEPARATOR;
+        $this->addons_path = Env::get('addons_path') . $this->getName() . DIRECTORY_SEPARATOR;
         // 读取当前插件配置信息
         if (is_file($this->addons_path . 'config.php')) {
             $this->config_file = $this->addons_path . 'config.php';
