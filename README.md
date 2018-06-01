@@ -2,7 +2,7 @@
 The ThinkPHP 5.1 Addons Package
 
 ## 安装
-> composer require zz-studio/think-addons
+> composer require zzstudio/think-addons
 
 ## 配置
 ### 公共配置
