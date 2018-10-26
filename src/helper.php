@@ -9,7 +9,7 @@
 // | Author: Byron Sampson <xiaobo.sun@qq.com>
 // +----------------------------------------------------------------------
 
-use think\App;
+use think\facade\App;
 use think\facade\Hook;
 use think\facade\Config;
 use think\Loader;
@@ -17,7 +17,7 @@ use think\facade\Cache;
 use think\facade\Route;
 
 // 插件目录
-$appPath = (new App())->getAppPath();
+$appPath = App::getAppPath();
 $addons_path = dirname($appPath) . DIRECTORY_SEPARATOR . 'addons' . DIRECTORY_SEPARATOR;
 Env::set('addons_path', $addons_path);
 // 定义路由
@@ -40,7 +40,7 @@ Hook::add('app_init', function () {
         return;
     }
     // 当debug时不缓存配置
-    $config = config('app_debug') ? [] : (array)cache('addons');
+    $config = App::isDebug() ? [] : (array)cache('addons');
     if (empty($config)) {
         // 读取插件目录及钩子列表
         $base = get_class_methods("\\think\\Addons");
@@ -79,7 +79,7 @@ Hook::add('app_init', function () {
 // 闭包初始化行为
 Hook::add('action_begin', function () {
     // 获取系统配置
-    $data = config('app_debug') ? [] : Cache::get('hooks', []);
+    $data = App::isDebug() ? [] : Cache::get('hooks', []);
     $config = config('addons');
     $addons = isset($config['hooks']) ? $config['hooks'] : [];
     if (empty($data)) {
@@ -183,4 +183,4 @@ function addon_url($url, $param = [], $suffix = true, $domain = false)
     $actions = "{$addons}-{$controller}-{$action}";
 
     return url("addons/execute/{$actions}", $param, $suffix, $domain);
-}
+}   
