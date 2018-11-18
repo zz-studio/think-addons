@@ -40,7 +40,7 @@ Hook::add('app_init', function () {
         return;
     }
     // 当debug时不缓存配置
-    $config = App::isDebug() ? [] : (array)cache('addons');
+    $config = App::isDebug() ? [] : cache('addons');
     if (empty($config)) {
         // 读取插件目录及钩子列表
         $base = get_class_methods("\\think\\Addons");
