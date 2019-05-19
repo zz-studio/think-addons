@@ -1,6 +1,6 @@
 <?php
 // +----------------------------------------------------------------------
-// | thinkphp5 Addons [ WE CAN DO IT JUST THINK IT ]
+// | thinkphp5.1 Addons [ WE CAN DO IT JUST THINK IT ]
 // +----------------------------------------------------------------------
 // | Copyright (c) 2016 http://www.zzstudio.net All rights reserved.
 // +----------------------------------------------------------------------
@@ -10,6 +10,7 @@
 // +----------------------------------------------------------------------
 
 use think\facade\App;
+use think\facade\Env;
 use think\facade\Hook;
 use think\facade\Config;
 use think\Loader;
@@ -20,8 +21,34 @@ use think\facade\Route;
 $appPath = App::getAppPath();
 $addons_path = dirname($appPath) . DIRECTORY_SEPARATOR . 'addons' . DIRECTORY_SEPARATOR;
 Env::set('addons_path', $addons_path);
-// 定义路由
-Route::any('addons/execute/:addon-:control-:action', "\\think\\addons\\Route@execute");
+
+// 插件访问路由配置
+Route::group('addons', function(){
+    // 请求位置
+    $path = rtrim(ltrim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/'), '.html');
+    $pathinfo = explode('/', $path);
+    // 路由地址
+    if (isset($pathinfo[2])) {
+        $route = explode('.', $pathinfo[1]);
+        $module = array_shift($route);
+        $controller = join('\\', $route);
+        // 请求转入
+        Route::rule(':rule', "\\addons\\{$module}\\controller\\{$controller}@{$pathinfo[2]}");
+    }
+})->middleware(function($request, \Closure $next){
+    // 路由地址
+    $pathinfo = explode('/', $request->path());
+    $rules = explode('.', $pathinfo[1]);
+    $request->setModule(array_shift($rules));
+    $request->setController(join('/', $rules));
+    $request->setAction($pathinfo[2]);
+
+    // 生成view_path
+    $view_path = Env::get('addons_path') . $request->module() . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR;
+    Config::set('template.view_path', $view_path);
+
+    return $next($request);
+});
 
 // 如果插件目录不存在则创建
 if (!is_dir($addons_path)) {
@@ -158,6 +185,21 @@ function get_addon_config($name)
 }
 
 /**
+ * 获取插件信息
+ * @param $name
+ * @return array
+ */
+function get_addon_info($name)
+{
+    $class = "\\addons\\{$name}\\Widget";
+    if (!class_exists($class)) {
+        return [];
+    }
+    $addon = new $class();
+    return $addon->getInfo();
+}
+
+/**
  * 插件显示内容里生成访问插件的url
  * @param $url
  * @param array $param
@@ -165,8 +207,9 @@ function get_addon_config($name)
  * @param bool|string $suffix 生成的URL后缀
  * @param bool|string $domain 域名
  */
-function addon_url($url, $param = [], $suffix = true, $domain = false)
+function addons_url($url, $param = [], $suffix = true, $domain = false)
 {
+    $url = Loader::parseName($url, 1);
     $url = parse_url($url);
     $case = config('url_convert');
     $addons = $case ? Loader::parseName($url['scheme']) : $url['scheme'];
@@ -179,8 +222,5 @@ function addon_url($url, $param = [], $suffix = true, $domain = false)
         $param = array_merge($query, $param);
     }
 
-    // 生成插件链接新规则
-    $actions = "{$addons}-{$controller}-{$action}";
-
-    return url("addons/execute/{$actions}", $param, $suffix, $domain);
+    return url("addons/{$addons}.{$controller}/{$action}", $param, $suffix, $domain);
 }   

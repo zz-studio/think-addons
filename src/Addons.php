@@ -10,21 +10,17 @@
 // +----------------------------------------------------------------------
 namespace think;
 
+use think\facade\Env;
+use think\addons\Controller;
+
 /**
  * 插件基类
  * Class Addns
  * @author Byron Sampson <xiaobo.sun@qq.com>
  * @package think\addons
  */
-abstract class Addons
+abstract class Addons extends Controller
 {
-    /**
-     * 视图实例对象
-     * @var view
-     * @access protected
-     */
-    protected $view = null;
-
     // 当前错误信息
     protected $error;
 
@@ -49,23 +45,10 @@ abstract class Addons
     public function __construct()
     {
         // 获取当前插件目录
-        $this->addons_path = \think\facade\Env::get('addons_path') . $this->getName() . DIRECTORY_SEPARATOR;
+        $this->addons_path = Env::get('addons_path') . $this->getName() . DIRECTORY_SEPARATOR;
         // 读取当前插件配置信息
         if (is_file($this->addons_path . 'config.php')) {
             $this->config_file = $this->addons_path . 'config.php';
-        }
-
-        $config = ['view_path' => $this->addons_path];
-        $this->request = Container::get('request');
-        $this->app     = Container::get('app');
-        // 初始化视图模型
-        $this->view    = Container::get('view')->init(
-            array_merge($this->app['config']->get('template.'), $config)
-        );
-
-        // 控制器初始化
-        if (method_exists($this, '_initialize')) {
-            $this->_initialize();
         }
     }
 
@@ -75,6 +58,13 @@ abstract class Addons
      */
     final public function getInfo()
     {
+        $info_path = $this->addons_path . 'info.ini';
+        if (is_file($info_path)) {
+            $info = parse_ini_file($info_path);
+            if (is_array($info)) {
+                $this->info = array_merge($this->info, $info);
+            }
+        }
         return $this->info;
     }
 
@@ -121,8 +111,8 @@ abstract class Addons
      */
     final public function getName()
     {
-        $data = explode('\\', get_class($this));
-        return strtolower(array_pop($data));
+        $data = array_reverse(explode('\\', get_class($this)));
+        return $data[1];
     }
 
     /**
@@ -138,71 +128,6 @@ abstract class Addons
             }
         }
         return true;
-    }
-
-    /**
-     * 加载模板和页面输出 可以返回输出内容
-     * @access public
-     * @param string $template 模板文件名或者内容
-     * @param array $vars 模板输出变量
-     * @param array $replace 替换内容
-     * @param array $config 模板参数
-     * @return mixed
-     * @throws \Exception
-     */
-    public function fetch($template = '', $vars = [], $replace = [], $config = [])
-    {
-        if (!is_file($template)) {
-            $template = '/' . $template;
-        }
-        // 关闭模板布局
-        $this->view->engine->layout(false);
-
-        echo $this->view->fetch($template, $vars, $replace, $config);
-    }
-
-    /**
-     * 渲染内容输出
-     * @access public
-     * @param string $content 内容
-     * @param array $vars 模板输出变量
-     * @param array $replace 替换内容
-     * @param array $config 模板参数
-     * @return mixed
-     */
-    public function display($content, $vars = [], $replace = [], $config = [])
-    {
-        // 关闭模板布局
-        $this->view->engine->layout(false);
-
-        echo $this->view->display($content, $vars, $replace, $config);
-    }
-
-    /**
-     * 渲染内容输出
-     * @access public
-     * @param string $content 内容
-     * @param array $vars 模板输出变量
-     * @return mixed
-     */
-    public function show($content, $vars = [])
-    {
-        // 关闭模板布局
-        $this->view->engine->layout(false);
-
-        echo $this->view->fetch($content, $vars, [], [], true);
-    }
-
-    /**
-     * 模板变量赋值
-     * @access protected
-     * @param mixed $name 要显示的模板变量
-     * @param mixed $value 变量的值
-     * @return void
-     */
-    public function assign($name, $value = '')
-    {
-        $this->view->assign($name, $value);
     }
 
     /**
