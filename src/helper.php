@@ -24,16 +24,35 @@ Env::set('addons_path', $addons_path);
 
 // 插件访问路由配置
 Route::group('addons', function(){
+    if (!isset($_SERVER['REQUEST_URI'])) {
+        return 'error addons';
+    }
     // 请求位置
-    $path = rtrim(ltrim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/'), '.html');
+    $path  = ltrim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
+    $ext = pathinfo($path, PATHINFO_EXTENSION);
+    if ($ext) {
+        $path = substr($path, 0, strlen($path) - (strlen($ext) + 1));
+    }
     $pathinfo = explode('/', $path);
     // 路由地址
     if (isset($pathinfo[2])) {
+        // 获取路由地址
         $route = explode('.', $pathinfo[1]);
         $module = array_shift($route);
         $controller = join('\\', $route);
+        $type = array_shift($route);
+        // 生成view_path
+        $view_path = Env::get('addons_path') . $module . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR;
+        Config::set('template.view_path', $view_path);
+        // 中间件
+        $middleware = [];
+        $config = Config::get('addons.middleware');
+        if (is_array($config) && isset($config[$type])) {
+            $middleware = (array)$config[$type];
+        }
         // 请求转入
-        Route::rule(':rule', "\\addons\\{$module}\\controller\\{$controller}@{$pathinfo[2]}");
+        Route::rule(':rule', "\\addons\\{$module}\\controller\\{$controller}@{$pathinfo[2]}")
+            ->middleware($middleware);
     }
 })->middleware(function($request, \Closure $next){
     // 路由地址
@@ -42,10 +61,6 @@ Route::group('addons', function(){
     $request->setModule(array_shift($rules));
     $request->setController(join('/', $rules));
     $request->setAction($pathinfo[2]);
-
-    // 生成view_path
-    $view_path = Env::get('addons_path') . $request->module() . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR;
-    Config::set('template.view_path', $view_path);
 
     return $next($request);
 });
