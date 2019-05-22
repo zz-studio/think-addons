@@ -38,17 +38,18 @@ abstract class Addons extends Controller
     public $addons_path = '';
     public $config_file = '';
 
-    /**
-     * 架构函数
-     * @access public
-     */
-    public function __construct()
+    // 初始化
+    protected function initialize()
     {
         // 获取当前插件目录
         $this->addons_path = Env::get('addons_path') . $this->getName() . DIRECTORY_SEPARATOR;
         // 读取当前插件配置信息
         if (is_file($this->addons_path . 'config.php')) {
             $this->config_file = $this->addons_path . 'config.php';
+        }
+        // 重新定义模板的根目录
+        if ($this->view) {
+            $this->view->config('view_path', $this->addons_path);
         }
     }
 

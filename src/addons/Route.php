@@ -26,7 +26,7 @@ class Route extends Controller
     {
         if (!empty($this->addon) && !empty($this->controller) && !empty($this->action)) {
             // 获取类的命名空间
-            $class = get_addon_class($this->addon, 'controller', $this->controller);
+            $class = get_addons_class($this->addon, 'controller', $this->controller);
             if (class_exists($class)) {
                 $model = new $class();
                 if ($model === false) {

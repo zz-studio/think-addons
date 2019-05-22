@@ -93,7 +93,7 @@ Hook::add('app_init', function () {
             // 获取插件目录名
             $name = pathinfo($info['dirname'], PATHINFO_FILENAME);
             // 找到插件入口文件
-            if (strtolower($info['filename']) == strtolower($name)) {
+            if (strtolower($info['filename']) == 'widget') {
                 // 读取出所有公共方法
                 $methods = (array)get_class_methods("\\addons\\" . $name . "\\" . $info['filename']);
                 // 跟插件基类方法做比对，得到差异结果
@@ -132,7 +132,7 @@ Hook::add('action_begin', function () {
             } else {
                 $values = (array)$values;
             }
-            $addons[$key] = array_filter(array_map('get_addon_class', $values));
+            $addons[$key] = array_filter(array_map('get_addons_class', $values));
             Hook::add($key, $addons[$key]);
         }
         cache('hooks', $addons);
@@ -149,7 +149,11 @@ Hook::add('action_begin', function () {
  */
 function hook($hook, $params = [])
 {
-    Hook::listen($hook, $params);
+    $result = Hook::listen($hook, $params);
+    if (is_array($result)) {
+        $result = join(PHP_EOL, $result);
+    }
+    return $result;
 }
 
 /**
@@ -159,7 +163,7 @@ function hook($hook, $params = [])
  * @param string $class 当前类名
  * @return string
  */
-function get_addon_class($name, $type = 'hook', $class = null)
+function get_addons_class($name, $type = 'hook', $class = null)
 {
     $name = Loader::parseName($name);
     // 处理多级控制器情况
@@ -177,7 +181,7 @@ function get_addon_class($name, $type = 'hook', $class = null)
             $namespace = "\\addons\\" . $name . "\\controller\\" . $class;
             break;
         default:
-            $namespace = "\\addons\\" . $name . "\\" . $class;
+            $namespace = "\\addons\\" . $name . "\\Widget";
     }
 
     return class_exists($namespace) ? $namespace : '';
@@ -190,7 +194,7 @@ function get_addon_class($name, $type = 'hook', $class = null)
  */
 function get_addon_config($name)
 {
-    $class = get_addon_class($name);
+    $class = get_addons_class($name);
     if (class_exists($class)) {
         $addon = new $class();
         return $addon->getConfig();
