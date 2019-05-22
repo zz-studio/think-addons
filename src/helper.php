@@ -208,7 +208,7 @@ function get_addon_config($name)
  * @param $name
  * @return array
  */
-function get_addon_info($name)
+function get_addons_info($name)
 {
     $class = "\\addons\\{$name}\\Widget";
     if (!class_exists($class)) {
