@@ -23,12 +23,12 @@ $addons_path = dirname($appPath) . DIRECTORY_SEPARATOR . 'addons' . DIRECTORY_SE
 Env::set('addons_path', $addons_path);
 
 // 插件访问路由配置
-Route::group('addons', function(){
+Route::group('addons', function () {
     if (!isset($_SERVER['REQUEST_URI'])) {
         return 'error addons';
     }
     // 请求位置
-    $path  = ltrim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
+    $path = ltrim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
     $ext = pathinfo($path, PATHINFO_EXTENSION);
     if ($ext) {
         $path = substr($path, 0, strlen($path) - (strlen($ext) + 1));
@@ -54,7 +54,7 @@ Route::group('addons', function(){
         Route::rule(':rule', "\\addons\\{$module}\\controller\\{$controller}@{$pathinfo[2]}")
             ->middleware($middleware);
     }
-})->middleware(function($request, \Closure $next){
+})->middleware(function ($request, \Closure $next) {
     // 路由地址
     $pathinfo = explode('/', $request->path());
     $rules = explode('.', $pathinfo[1]);
@@ -163,28 +163,30 @@ function hook($hook, $params = [])
  * @param string $class 当前类名
  * @return string
  */
-function get_addons_class($name, $type = 'hook', $class = null)
-{
-    $name = Loader::parseName($name);
-    // 处理多级控制器情况
-    if (!is_null($class) && strpos($class, '.')) {
-        $class = explode('.', $class);
-        foreach ($class as $key => $cls) {
-            $class[$key] = Loader::parseName($cls, 1);
+if (!function_exists('get_addons_class')) {
+    function get_addons_class($name, $type = 'hook', $class = null)
+    {
+        $name = Loader::parseName($name);
+        // 处理多级控制器情况
+        if (!is_null($class) && strpos($class, '.')) {
+            $class = explode('.', $class);
+            foreach ($class as $key => $cls) {
+                $class[$key] = Loader::parseName($cls, 1);
+            }
+            $class = implode('\\', $class);
+        } else {
+            $class = Loader::parseName(is_null($class) ? $name : $class, 1);
         }
-        $class = implode('\\', $class);
-    } else {
-        $class = Loader::parseName(is_null($class) ? $name : $class, 1);
-    }
-    switch ($type) {
-        case 'controller':
-            $namespace = "\\addons\\" . $name . "\\controller\\" . $class;
-            break;
-        default:
-            $namespace = "\\addons\\" . $name . "\\Widget";
-    }
+        switch ($type) {
+            case 'controller':
+                $namespace = "\\addons\\" . $name . "\\controller\\" . $class;
+                break;
+            default:
+                $namespace = "\\addons\\" . $name . "\\Widget";
+        }
 
-    return class_exists($namespace) ? $namespace : '';
+        return class_exists($namespace) ? $namespace : '';
+    }
 }
 
 /**
@@ -192,14 +194,47 @@ function get_addons_class($name, $type = 'hook', $class = null)
  * @param string $name 插件名
  * @return array
  */
-function get_addon_config($name)
-{
-    $class = get_addons_class($name);
-    if (class_exists($class)) {
-        $addon = new $class();
-        return $addon->getConfig();
-    } else {
-        return [];
+if (!function_exists('get_addons_config')) {
+    function get_addons_config($name, $parse = false)
+    {
+        static $_config = array();
+
+        // 获取当前插件目录
+        $addons_path = Env::get('addons_path') . $name . DIRECTORY_SEPARATOR;
+        // 读取当前插件配置信息
+        if (is_file($addons_path . 'config.php')) {
+            $config_file = $addons_path . 'config.php';
+        }
+
+        if (isset($_config[$name])) {
+            return $_config[$name];
+        }
+
+        $config = [];
+        if (isset($config_file) && is_file($config_file)) {
+            $temp_arr = include $config_file;
+            if (is_array($temp_arr)) {
+                if ($parse) {
+                    foreach ($temp_arr as $key => $value) {
+                        if ($value['type'] == 'group') {
+                            foreach ($value['options'] as $gkey => $gvalue) {
+                                foreach ($gvalue['options'] as $ikey => $ivalue) {
+                                    $config[$ikey] = $ivalue['value'];
+                                }
+                            }
+                        } else {
+                            $config[$key] = $temp_arr[$key]['value'];
+                        }
+                    }
+                } else {
+                    $config = $temp_arr;
+                }
+            }
+            unset($temp_arr);
+        }
+        $_config[$name] = $config;
+
+        return $config;
     }
 }
 
@@ -208,38 +243,42 @@ function get_addon_config($name)
  * @param $name
  * @return array
  */
-function get_addons_info($name)
-{
-    $class = "\\addons\\{$name}\\Widget";
-    if (!class_exists($class)) {
-        return [];
+if (!function_exists('get_addons_info')) {
+    function get_addons_info($name)
+    {
+        $class = "\\addons\\{$name}\\Widget";
+        if (!class_exists($class)) {
+            return [];
+        }
+        $addon = new $class();
+        return $addon->getInfo();
     }
-    $addon = new $class();
-    return $addon->getInfo();
 }
 
 /**
  * 插件显示内容里生成访问插件的url
  * @param $url
  * @param array $param
- * @return bool|string
  * @param bool|string $suffix 生成的URL后缀
  * @param bool|string $domain 域名
+ * @return bool|string
  */
-function addons_url($url, $param = [], $suffix = true, $domain = false)
-{
-    $url = Loader::parseName($url, 1);
-    $url = parse_url($url);
-    $case = config('url_convert');
-    $addons = $case ? Loader::parseName($url['scheme']) : $url['scheme'];
-    $controller = $case ? Loader::parseName($url['host']) : $url['host'];
-    $action = trim($case ? strtolower($url['path']) : $url['path'], '/');
+if (!function_exists('addons_url')) {
+    function addons_url($url, $param = [], $suffix = true, $domain = false)
+    {
+        $url = Loader::parseName($url, 1);
+        $url = parse_url($url);
+        $case = config('url_convert');
+        $addons = $case ? Loader::parseName($url['scheme']) : $url['scheme'];
+        $controller = $case ? Loader::parseName($url['host']) : $url['host'];
+        $action = trim($case ? strtolower($url['path']) : $url['path'], '/');
 
-    /* 解析URL带的参数 */
-    if (isset($url['query'])) {
-        parse_str($url['query'], $query);
-        $param = array_merge($query, $param);
+        /* 解析URL带的参数 */
+        if (isset($url['query'])) {
+            parse_str($url['query'], $query);
+            $param = array_merge($query, $param);
+        }
+
+        return url("addons/{$addons}.{$controller}/{$action}", $param, $suffix, $domain);
     }
-
-    return url("addons/{$addons}.{$controller}/{$action}", $param, $suffix, $domain);
-}   
+}

@@ -43,10 +43,7 @@ abstract class Addons extends Controller
     {
         // 获取当前插件目录
         $this->addons_path = Env::get('addons_path') . $this->getName() . DIRECTORY_SEPARATOR;
-        // 读取当前插件配置信息
-        if (is_file($this->addons_path . 'config.php')) {
-            $this->config_file = $this->addons_path . 'config.php';
-        }
+
         // 重新定义模板的根目录
         if ($this->view) {
             $this->view->config('view_path', $this->addons_path);
@@ -74,37 +71,10 @@ abstract class Addons extends Controller
      * @param string $name 可选模块名
      * @return array|mixed|null
      */
-    final public function getConfig($name = '')
+    final public function getConfig($parse = false)
     {
-        static $_config = array();
-        if (empty($name)) {
-            $name = $this->getName();
-        }
-        if (isset($_config[$name])) {
-            return $_config[$name];
-        }
-
-        $config = [];
-        if (is_file($this->config_file)) {
-            $temp_arr = include $this->config_file;
-            if (is_array($temp_arr)) {
-                foreach ($temp_arr as $key => $value) {
-                    if ($value['type'] == 'group') {
-                        foreach ($value['options'] as $gkey => $gvalue) {
-                            foreach ($gvalue['options'] as $ikey => $ivalue) {
-                                $config[$ikey] = $ivalue['value'];
-                            }
-                        }
-                    } else {
-                        $config[$key] = $temp_arr[$key]['value'];
-                    }
-                }
-            }
-            unset($temp_arr);
-        }
-        $_config[$name] = $config;
-
-        return $config;
+        $name = $this->getName();
+        return get_addons_config($name, $parse);
     }
 
     /**
@@ -125,7 +95,7 @@ abstract class Addons extends Controller
     {
         $info_check_keys = ['name', 'title', 'description', 'status', 'author', 'version'];
         foreach ($info_check_keys as $value) {
-            if (!array_key_exists($value, $this->info)) {
+            if (!array_key_exists($value, $this->getInfo())) {
                 return false;
             }
         }
