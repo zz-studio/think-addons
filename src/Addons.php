@@ -46,7 +46,7 @@ abstract class Addons extends Controller
 
         // 重新定义模板的根目录
         if ($this->view) {
-            $this->view->config('view_path', $this->addons_path);
+            $this->view->config('view_path', $this->addons_path . 'view' . DIRECTORY_SEPARATOR);
         }
     }
 

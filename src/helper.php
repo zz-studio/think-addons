@@ -39,6 +39,8 @@ Route::group('addons', function () {
         // 获取路由地址
         $route = explode('.', $pathinfo[1]);
         $module = array_shift($route);
+        $className = ucfirst(array_pop($route));
+        array_push($route, $className);
         $controller = join('\\', $route);
         $type = array_shift($route);
         // 生成view_path
