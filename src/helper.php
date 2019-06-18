@@ -266,19 +266,27 @@ if (!function_exists('get_addons_info')) {
  * @return bool|string
  */
 if (!function_exists('addons_url')) {
-    function addons_url($url, $param = [], $suffix = true, $domain = false)
+    function addons_url($url = '', $param = [], $suffix = true, $domain = false)
     {
-        $url = Loader::parseName($url, 1);
-        $url = parse_url($url);
-        $case = config('url_convert');
-        $addons = $case ? Loader::parseName($url['scheme']) : $url['scheme'];
-        $controller = $case ? Loader::parseName($url['host']) : $url['host'];
-        $action = trim($case ? strtolower($url['path']) : $url['path'], '/');
+        if (empty($url)) {
+            // 生成 url 模板变量
+            $addons = request()->module();
+            $controller = request()->controller();
+            $controller = str_replace('/', '.', $controller);
+            $action = request()->action();
+        } else {
+            $url = Loader::parseName($url, 1);
+            $url = parse_url($url);
+            $case = config('url_convert');
+            $addons = $case ? Loader::parseName($url['scheme']) : $url['scheme'];
+            $controller = $case ? Loader::parseName($url['host']) : $url['host'];
+            $action = trim($case ? strtolower($url['path']) : $url['path'], '/');
 
-        /* 解析URL带的参数 */
-        if (isset($url['query'])) {
-            parse_str($url['query'], $query);
-            $param = array_merge($query, $param);
+            /* 解析URL带的参数 */
+            if (isset($url['query'])) {
+                parse_str($url['query'], $query);
+                $param = array_merge($query, $param);
+            }
         }
 
         return url("addons/{$addons}.{$controller}/{$action}", $param, $suffix, $domain);
