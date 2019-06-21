@@ -35,7 +35,7 @@ Route::group('addons', function () {
     }
     $pathinfo = explode('/', $path);
     // 路由地址
-    if (isset($pathinfo[2])) {
+    if ($pathinfo[0] == 'addons' && isset($pathinfo[2])) {
         // 获取路由地址
         $route = explode('.', $pathinfo[1]);
         $module = array_shift($route);
