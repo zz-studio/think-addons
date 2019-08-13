@@ -153,6 +153,11 @@ function hook($hook, $params = [])
 {
     $result = Hook::listen($hook, $params);
     if (is_array($result)) {
+        foreach ($result as &$item) {
+            if ($item instanceof \think\response\View) {
+                $item = $item->getContent();
+            }
+        }
         $result = join(PHP_EOL, $result);
     }
     return $result;
