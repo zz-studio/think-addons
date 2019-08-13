@@ -160,7 +160,7 @@ function hook($hook, $params = [])
         }
         $result = join(PHP_EOL, $result);
     }
-    return $result;
+    echo $result;
 }
 
 /**
