@@ -1,6 +1,6 @@
 {
     "name": "zzstudio/think-addons",
-    "description": "The ThinkPHP5.1 Addons Package",
+    "description": "The ThinkPHP5+ Addons Package",
     "license": "Apache-2.0",
     "authors": [
         {
@@ -8,9 +8,8 @@
             "email": "xiaobo.sun@qq.com"
         }
     ],
-    "minimum-stability": "dev",
     "require": {
-        "topthink/framework": "5.1.*"
+
     },
     "autoload": {
         "psr-4": {
