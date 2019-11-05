@@ -214,11 +214,9 @@ class Service extends \think\Service
      * @param string $name
      * @return array
      */
-    public function getAddonsConfig($name = '')
+    public function getAddonsConfig()
     {
-        if (empty($name)) {
-            $name = $this->app->request->addon;
-        }
+        $name = $this->app->request->addon;
         $addon = get_addons_instance($name);
         if (!$addon) {
             return [];
