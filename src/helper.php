@@ -142,18 +142,26 @@ if (!function_exists('addons_url')) {
      */
     function addons_url($url = '', $param = [], $suffix = true, $domain = false)
     {
+        $request = app('request');
         if (empty($url)) {
             // 生成 url 模板变量
-            $addons = request()->addon;
-            $controller = request()->controller();
+            $addons = $request->addon;
+            $controller = $request->controller();
             $controller = str_replace('/', '.', $controller);
-            $action = request()->action();
+            $action = $request->action();
         } else {
             $url = Str::studly($url);
             $url = parse_url($url);
-            $addons = $url['scheme'];
-            $controller = $url['host'];
-            $action = trim($url['path'], '/');
+            if (isset($url['scheme'])) {
+                $addons = $url['scheme'];
+                $controller = $url['host'];
+                $action = trim($url['path'], '/');
+            } else {
+                $route = explode('/', $url['path']);
+                $addons = $request->addon;
+                $action = array_pop($route);
+                $controller = array_pop($route) ?: $request->controller();
+            }
 
             /* 解析URL带的参数 */
             if (isset($url['query'])) {
@@ -162,7 +170,7 @@ if (!function_exists('addons_url')) {
             }
         }
 
-        return Route::buildUrl("addons/{$addons}/{$controller}/{$action}", $param)->suffix($suffix)->domain($domain);
+        return Route::buildUrl("@addons/{$addons}/{$controller}/{$action}", $param)->suffix($suffix)->domain($domain);
     }
 }
 

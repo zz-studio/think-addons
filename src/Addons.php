@@ -80,6 +80,7 @@ abstract class Addons
         if (empty($name)) {
             $class = get_class($this);
             list(, $name, ) = explode('\\', $class);
+            $this->request->addon = $name;
         }
         return $name;
     }
