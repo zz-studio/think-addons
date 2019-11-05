@@ -5,8 +5,14 @@ The ThinkPHP 6 Addons Package
 > composer require zzstudio/think-addons
 
 ## 配置
-### 公共配置
+
+### 快速生成配置
+```php
+在命令行执行
+php think addons:config 
 ```
+### 公共配置
+```php
 'addons'=>[
     // 是否自动读取取插件钩子配置信息（默认是开启）
     'autoload' => true,
@@ -21,7 +27,7 @@ The ThinkPHP 6 Addons Package
 ]
 ```
 或者在\config目录中新建`addons.php`,内容为：
-```
+```php
 <?php
 return [
 	// 是否自动读取取插件钩子配置信息
@@ -173,6 +179,43 @@ class Index
 
 ```php
 hook('testhook', ['id'=>1])
+```
+
+### 插件公共方法
+```php
+/**
+ * 处理插件钩子
+ * @param string $event 钩子名称
+ * @param array|null $params 传入参数
+ * @param bool $once 是否只返回一个结果
+ * @return mixed
+ */
+function hook($event, $params = null, bool $once = false);
+
+/**
+ * 读取插件的基础信息
+ * @param string $name 插件名
+ * @return array
+ */
+function get_addons_info($name);
+
+/**
+ * 获取插件Plugin的单例
+ * @param string $name 插件名
+ * @return mixed|null
+ */
+function get_addons_instance($name);
+
+/**
+ * 插件显示内容里生成访问插件的url
+ * @param $url 在插件控制器中可忽略插件名，在非插件中生成时需指定插件名。例：插件名://控制器/方法
+ * @param array $param
+ * @param bool|string $suffix 生成的URL后缀
+ * @param bool|string $domain 域名
+ * @return bool|string
+ */
+function addons_url($url = '', $param = [], $suffix = true, $domain = false);
+
 ```
 
 ## 插件目录结构

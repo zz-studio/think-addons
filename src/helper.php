@@ -48,7 +48,7 @@ if (!function_exists('hook')) {
      * 处理插件钩子
      * @param string $event 钩子名称
      * @param array|null $params 传入参数
-     * @param bool $once
+     * @param bool $once 是否只返回一个结果
      * @return mixed
      */
     function hook($event, $params = null, bool $once = false)
