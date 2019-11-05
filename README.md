@@ -62,11 +62,11 @@ use think\Addons;
  */
 class Plugin extends Addons	// 需继承think\Addons类
 {
-	// 该插件的基础信息
+    // 该插件的基础信息
     public $info = [
         'name' => 'test',	// 插件标识
         'title' => '插件测试',	// 插件名称
-        'description' => 'thinkph5.1插件测试',	// 插件简介
+        'description' => 'thinkph6插件测试',	// 插件简介
         'status' => 0,	// 状态
         'author' => 'byron sampson',
         'version' => '0.1'

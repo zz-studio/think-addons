@@ -27,6 +27,8 @@ class Service extends \think\Service
         Lang::load([
             $this->app->getRootPath() . '/vendor/zzstudio/think-addons/src/lang/zh-cn.php'
         ]);
+        // 自动载入插件
+        $this->autoload();
         // 加载插件事件
         $this->loadEvent();
         // 加载插件系统服务
@@ -148,6 +150,53 @@ class Service extends \think\Service
         $this->app->bind($bind);
     }
 
+    /**
+     * 自动载入插件
+     * @return bool
+     */
+    private function autoload()
+    {
+        // 是否处理自动载入
+        if (!Config::get('addons.autoload', true)) {
+            return true;
+        }
+        $config = Config::get('addons');
+        // 读取插件目录及钩子列表
+        $base = get_class_methods("\\think\\Addons");
+        // 读取插件目录中的php文件
+        foreach (glob($this->getAddonsPath() . '*/*.php') as $addons_file) {
+            // 格式化路径信息
+            $info = pathinfo($addons_file);
+            // 获取插件目录名
+            $name = pathinfo($info['dirname'], PATHINFO_FILENAME);
+            // 找到插件入口文件
+            if (strtolower($info['filename']) === 'plugin') {
+                // 读取出所有公共方法
+                $methods = (array)get_class_methods("\\addons\\" . $name . "\\" . $info['filename']);
+                // 跟插件基类方法做比对，得到差异结果
+                $hooks = array_diff($methods, $base);
+                // 循环将钩子方法写入配置中
+                foreach ($hooks as $hook) {
+                    if (!isset($config['hooks'][$hook])) {
+                        $config['hooks'][$hook] = [];
+                    }
+                    // 兼容手动配置项
+                    if (is_string($config['hooks'][$hook])) {
+                        $config['hooks'][$hook] = explode(',', $config['hooks'][$hook]);
+                    }
+                    if (!in_array($name, $config['hooks'][$hook])) {
+                        $config['hooks'][$hook][] = $name;
+                    }
+                }
+            }
+        }
+        Config::set($config, 'addons');
+    }
+
+    /**
+     * 获取 addons 路径
+     * @return string
+     */
     public function getAddonsPath()
     {
         // 初始化插件目录

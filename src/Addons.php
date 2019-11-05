@@ -39,6 +39,10 @@ abstract class Addons
     protected $addon_path;
     // 视图模型
     protected $view;
+    // 插件配置
+    protected $addon_config;
+    // 插件信息
+    protected $addon_info;
 
     /**
      * 插件构造函数
@@ -51,6 +55,8 @@ abstract class Addons
         $this->request = $app->request;
         $this->name = $this->getName();
         $this->addon_path = $app->addons->getAddonsPath() . $this->name . DIRECTORY_SEPARATOR;
+        $this->addon_config = "addon_{$this->name}_config";
+        $this->addon_info = "addon_{$this->name}_info";
         $this->view = View::engine('Think');
         $this->view->config([
             'view_path' => $this->addon_path . 'view' . DIRECTORY_SEPARATOR
@@ -133,21 +139,48 @@ abstract class Addons
      * 插件基础信息
      * @return array
      */
-    public function getInfo()
+    final public function getInfo()
     {
-        $info = Config::get("{$this->name}_info");
+        $info = Config::get($this->addon_info);
         if ($info) {
             return $info;
         }
 
+        // 文件属性
+        $info = $this->info ?? [];
+        // 文件配置
         $info_file = $this->addon_path . 'info.ini';
         if (is_file($info_file)) {
-            $info = parse_ini_file($info_file, true, INI_SCANNER_TYPED) ?: [];
-            $info['url'] = addons_url();
+            $_info = parse_ini_file($info_file, true, INI_SCANNER_TYPED) ?: [];
+            $_info['url'] = addons_url();
+            $info = array_merge($_info, $info);
         }
-        Config::set($info, "{$this->name}_info");
+        Config::set($info, $this->addon_info);
 
         return isset($info) ? $info : [];
+    }
+
+    /**
+     * 获取配置信息
+     * @return mixed
+     */
+    final public function getConfig()
+    {
+        $config = Config::get($this->addon_config, []);
+        if ($config) {
+            return $config;
+        }
+        $config_file = $this->addon_path . 'config.php';
+        if (is_file($config_file)) {
+            $temp_arr = include $config_file;
+            foreach ($temp_arr as $key => $value) {
+                $config[$value['name']] = $value['value'];
+            }
+            unset($temp_arr);
+        }
+        Config::set($config, $this->addon_config);
+
+        return $config;
     }
 
     //必须实现安装
