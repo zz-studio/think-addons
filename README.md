@@ -135,6 +135,8 @@ return [
 要访问插件中的controller时使用addon_url生成url链接。
 如下：
 <a href="{:addons_url('Action/link')}">link test</a>
+或
+<a href="{:addons_url('test://Action/link')}">link test</a>
 格式为：
 test为插件名，Action为controller中的类名[多级控制器可以用.分割]，link为controller中的方法
 ```
