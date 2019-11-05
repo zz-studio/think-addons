@@ -18,6 +18,7 @@
  * | Copyright (c) 2019 http://www.zzstudio.net All rights reserved.
  * +----------------------------------------------------------------------
  */
+declare(strict_types=1);
 
 namespace think;
 
@@ -35,7 +36,7 @@ abstract class Addons
     // 当前插件标识
     protected $name;
     // 插件路径
-    protected $addons_path;
+    protected $addon_path;
     // 视图模型
     protected $view;
 
@@ -48,11 +49,12 @@ abstract class Addons
     {
         $this->app = $app;
         $this->request = $app->request;
-        $this->name = $this->request->addon;
-        $this->addons_path = $this->request->addons_path . $this->name . DIRECTORY_SEPARATOR;
-        $config = Config::get('view');
-        $config['view_path'] = $this->addons_path . 'view' . DIRECTORY_SEPARATOR;
-        $this->view = View::instance($config);
+        $this->name = $this->getName();
+        $this->addon_path = $app->addons->getAddonsPath() . $this->name . DIRECTORY_SEPARATOR;
+        $this->view = View::engine('Think');
+        $this->view->config([
+            'view_path' => $this->addon_path . 'view' . DIRECTORY_SEPARATOR
+        ]);
 
         // 控制器初始化
         $this->initialize();
@@ -61,6 +63,20 @@ abstract class Addons
     // 初始化
     protected function initialize()
     {}
+
+    /**
+     * 获取插件标识
+     * @return mixed|null
+     */
+    final protected function getName()
+    {
+        $name = $this->request->addon;
+        if (empty($name)) {
+            $class = get_class($this);
+            list(, $name, ) = explode('\\', $class);
+        }
+        return $name;
+    }
 
     /**
      * 加载模板输出
@@ -124,7 +140,7 @@ abstract class Addons
             return $info;
         }
 
-        $info_file = $this->addons_path . 'info.ini';
+        $info_file = $this->addon_path . 'info.ini';
         if (is_file($info_file)) {
             $info = parse_ini_file($info_file, true, INI_SCANNER_TYPED) ?: [];
             $info['url'] = addons_url();

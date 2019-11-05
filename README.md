@@ -1,35 +1,39 @@
 # think-addons
-The ThinkPHP 5.1 Addons Package
+The ThinkPHP 6 Addons Package
 
 ## 安装
-> composer require zzstudio/think-addons:dev-master
+> composer require zzstudio/think-addons
 
 ## 配置
 ### 公共配置
 ```
 'addons'=>[
-    // 是否自动读取取插件钩子配置信息（默认是关闭）
-    'autoload' => false,
+    // 是否自动读取取插件钩子配置信息（默认是开启）
+    'autoload' => true,
     // 当关闭自动获取配置时需要手动配置hooks信息
     'hooks' => [
 	    // 可以定义多个钩子
         'testhook'=>'test' // 键为钩子名称，用于在业务中自定义钩子处理，值为实现该钩子的插件，
 					// 多个插件可以用数组也可以用逗号分割
-	]
+	],
+    'route' => [],
+    'service' => [],
 ]
 ```
 或者在\config目录中新建`addons.php`,内容为：
 ```
 <?php
 return [
-	// 是否自动读取取插件钩子配置信息（默认是关闭）
+	// 是否自动读取取插件钩子配置信息
     'autoload' => false,
     // 当关闭自动获取配置时需要手动配置hooks信息
     'hooks' => [
         // 可以定义多个钩子
         'testhook'=>'test' // 键为钩子名称，用于在业务中自定义钩子处理，值为实现该钩子的插件，
                     // 多个插件可以用数组也可以用逗号分割
-    ]
+    ],
+    'route' => [],
+    'service' => [],
 ];
 ```
 
@@ -44,9 +48,9 @@ return [
 > 在addons目录中创建test目录
 
 ### 创建钩子实现类
-> 在test目录中创建 Widget.php 类文件。注意：类文件首字母需大写
+> 在test目录中创建 Plugin.php 类文件。注意：类文件首字母需大写
 
-```
+```php
 <?php
 namespace addons\test;	// 注意命名空间规范
 
@@ -56,7 +60,7 @@ use think\Addons;
  * 插件测试
  * @author byron sampson
  */
-class Widget extends Addons	// 需继承think\addons\Addons类
+class Plugin extends Addons	// 需继承think\Addons类
 {
 	// 该插件的基础信息
     public $info = [
@@ -106,7 +110,7 @@ class Widget extends Addons	// 需继承think\addons\Addons类
 ### 创建插件配置文件
 > 在test目录中创建config.php类文件，插件配置文件可以省略。
 
-```
+```php
 <?php
 return [
     'display' => [
@@ -122,24 +126,24 @@ return [
 ```
 
 ### 创建钩子模板文件
-> 在test目录中创建info.html模板文件，钩子在使用fetch方法时对应的模板文件。
+> 在test->view目录中创建info.html模板文件，钩子在使用fetch方法时对应的模板文件。
 
-```
+```html
 <h1>hello tpl</h1>
 
 如果插件中需要有链接或提交数据的业务，可以在插件中创建controller业务文件，
 要访问插件中的controller时使用addon_url生成url链接。
 如下：
-<a href="{:addons_url('test://Action/link')}">link test</a>
+<a href="{:addons_url('Action/link')}">link test</a>
 格式为：
 test为插件名，Action为controller中的类名[多级控制器可以用.分割]，link为controller中的方法
 ```
 
 ### 创建插件的controller文件
 > 在test目录中创建controller目录，在controller目录中创建Index.php文件
-> controller类的用法与tp5.1中的controller一致
+> controller类的用法与tp6中的controller一致
 
-```
+```php
 <?php
 namespace addons\test\controller;
 
@@ -151,23 +155,6 @@ class Index
     }
 }
 ```
-> 如果需要使用view模板则需要继承`\think\addons\Controller`类
-> 模板文件所在位置为插件目录的view中，规则与模块中的view规则一致
-
-```
-<?php
-namespace addons\test\controller;
-
-use think\addons\Controller;
-
-class Action extends Controller
-{
-    public function link()
-    {
-        return $this->fetch();
-    }
-}
-```
 
 ## 使用钩子
 > 创建好插件后就可以在正常业务中使用该插件中的钩子了
@@ -175,36 +162,62 @@ class Action extends Controller
 
 ### 模板中使用钩子
 
-```
+```html
 <div>{:hook('testhook', ['id'=>1])}</div>
 ```
 
 ### php业务中使用
-> 只要是thinkphp5.1正常流程中的任意位置均可以使用
+> 只要是thinkphp6正常流程中的任意位置均可以使用
 
-```
+```php
 hook('testhook', ['id'=>1])
 ```
 
 ## 插件目录结构
 ### 最终生成的目录结构为
 
-```
-tp5
- - addons
- -- test
- --- controller
- ---- Action.php
- --- view
- ---- action
- ----- link.html
- --- config.php
- --- info.html
- --- Test.php
- - application
- - config
- - thinkphp
- - extend
- - vendor
- - public
+```html
+www  WEB部署目录（或者子目录）
+├─addons           插件目录
+├─app           应用目录
+│  ├─controller      控制器目录
+│  ├─model           模型目录
+│  ├─ ...            更多类库目录
+│  │
+│  ├─common.php         公共函数文件
+│  └─event.php          事件定义文件
+│
+├─config                配置目录
+│  ├─app.php            应用配置
+│  ├─cache.php          缓存配置
+│  ├─console.php        控制台配置
+│  ├─cookie.php         Cookie配置
+│  ├─database.php       数据库配置
+│  ├─filesystem.php     文件磁盘配置
+│  ├─lang.php           多语言配置
+│  ├─log.php            日志配置
+│  ├─middleware.php     中间件配置
+│  ├─route.php          URL和路由配置
+│  ├─session.php        Session配置
+│  ├─trace.php          Trace配置
+│  └─view.php           视图配置
+│
+├─view            视图目录
+├─route                 路由定义目录
+│  ├─route.php          路由定义文件
+│  └─ ...   
+│
+├─public                WEB目录（对外访问目录）
+│  ├─index.php          入口文件
+│  ├─router.php         快速测试文件
+│  └─.htaccess          用于apache的重写
+│
+├─extend                扩展类库目录
+├─runtime               应用的运行时目录（可写，可定制）
+├─vendor                Composer类库目录
+├─.example.env          环境变量示例文件
+├─composer.json         composer 定义文件
+├─LICENSE.txt           授权说明文件
+├─README.md             README 文件
+├─think                 命令行入口文件
 ```

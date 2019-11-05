@@ -1,9 +1,14 @@
 <?php
+declare(strict_types=1);
 
 namespace think\addons;
 
 use think\Route;
+use think\helper\Str;
 use think\facade\Config;
+use think\facade\Lang;
+use think\facade\Cache;
+use think\facade\Event;
 use think\addons\middleware\Addons;
 
 /**
@@ -17,32 +22,97 @@ class Service extends \think\Service
 
     public function register()
     {
-        // 初始化插件目录
-        $this->addons_path = $this->app->getRootPath() . 'addons' . DIRECTORY_SEPARATOR;
-        // 如果插件目录不存在则创建
-        if (!is_dir($this->addons_path)) {
-            @mkdir($this->addons_path, 0755, true);
-        }
-        $this->app->request->addons_path = $this->addons_path;
-        // 加载语言包
-        $lang = Config::get('lang');
-        if (!isset($lang['extend_list']['zh-cn'])) {
-            $lang['extend_list']['zh-cn'] = [];
-        }
-        $lang['extend_list']['zh-cn'] += [
+        $this->addons_path = $this->getAddonsPath();
+        // 加载系统语言包
+        Lang::load([
             $this->app->getRootPath() . '/vendor/zzstudio/think-addons/src/lang/zh-cn.php'
-        ];
-        Config::set($lang, 'lang');
+        ]);
+        // 加载插件事件
+        $this->loadEvent();
         // 加载插件系统服务
         $this->loadService();
+        // 绑定插件容器
+        $this->app->bind('addons', Service::class);
     }
 
     public function boot()
     {
         $this->registerRoutes(function (Route $route) {
-            $route->rule("addons/:addon/[:controller]/[:action]", '\\think\\addons\\Route::execute')
+            // 路由脚本
+            $execute = '\\think\\addons\\Route::execute';
+            // 注册控制器路由
+            $route->rule("addons/:addon/[:controller]/[:action]", $execute)
                 ->middleware(Addons::class);
+            // 自定义路由
+            $routes = (array) Config::get('addons.route', []);
+            foreach ($routes as $key => $val) {
+                if (!$val) {
+                    continue;
+                }
+                if (is_array($val)) {
+                    $domain = $val['domain'];
+                    $rules = [];
+                    foreach ($val['rule'] as $k => $rule) {
+                        [$addon, $controller, $action] = explode('/', $rule);
+                        $rules[$k] = [
+                            'addons'        => $addon,
+                            'controller'    => $controller,
+                            'action'        => $action,
+                            'indomain'      => 1,
+                        ];
+                    }
+                    $route->domain($domain, function () use ($rules, $route, $execute) {
+                        // 动态注册域名的路由规则
+                        foreach ($rules as $k => $rule) {
+                            $route->rule($k, $execute)
+                                ->name($k)
+                                ->completeMatch(true)
+                                ->append($rule);
+                        }
+                    });
+                } else {
+                    list($addon, $controller, $action) = explode('/', $val);
+                    $route->rule($key, $execute)
+                        ->name($key)
+                        ->completeMatch(true)
+                        ->append([
+                            'addons' => $addon,
+                            'controller' => $controller,
+                            'action' => $action
+                        ]);
+                }
+            }
         });
+    }
+
+    /**
+     * 插件事件
+     */
+    private function loadEvent()
+    {
+        $hooks = $this->app->isDebug() ? [] : Cache::get('hooks', []);
+        if (empty($hooks)) {
+            $hooks = (array) Config::get('addons.hooks', []);
+            // 初始化钩子
+            foreach ($hooks as $key => $values) {
+                if (is_string($values)) {
+                    $values = explode(',', $values);
+                } else {
+                    $values = (array) $values;
+                }
+                $hooks[$key] = array_filter(array_map(function ($v) use ($key) {
+                    return [get_addons_class($v), Str::camel($key)];
+                }, $values));
+            }
+            Cache::set('hooks', $hooks);
+        }
+        //如果在插件中有定义 AddonsInit，则直接执行
+        if (isset($hooks['AddonsInit'])) {
+            foreach ($hooks['AddonsInit'] as $k => $v) {
+                Event::trigger('AddonsInit', $v);
+            }
+        }
+        Event::listenEvents($hooks);
     }
 
     /**
@@ -76,5 +146,17 @@ class Service extends \think\Service
             $bind = array_merge($bind, $info);
         }
         $this->app->bind($bind);
+    }
+
+    public function getAddonsPath()
+    {
+        // 初始化插件目录
+        $addons_path = $this->app->getRootPath() . 'addons' . DIRECTORY_SEPARATOR;
+        // 如果插件目录不存在则创建
+        if (!is_dir($addons_path)) {
+            @mkdir($addons_path, 0755, true);
+        }
+
+        return $addons_path;
     }
 }

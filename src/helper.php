@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 use think\facade\Event;
 use think\facade\Route;
@@ -46,7 +47,9 @@ if (!function_exists('hook')) {
      */
     function hook($event, $params = null, bool $once = false)
     {
-        return Event::trigger($event, $params, $once);
+        $result = Event::trigger($event, $params, $once);
+
+        return join('', $result);
     }
 }
 
@@ -100,7 +103,7 @@ if (!function_exists('get_addons_class')) {
      */
     function get_addons_class($name, $type = 'hook', $class = null)
     {
-        $name = Str::snake($name);
+        $name = trim($name);
         // 处理多级控制器情况
         if (!is_null($class) && strpos($class, '.')) {
             $class = explode('.', $class);
@@ -115,7 +118,7 @@ if (!function_exists('get_addons_class')) {
                 $namespace = '\\addons\\' . $name . '\\controller\\' . $class;
                 break;
             default:
-                $namespace = '\\addons\\' . $name . '\\' . $class;
+                $namespace = '\\addons\\' . $name . '\\Plugin';
         }
 
         return class_exists($namespace) ? $namespace : '';
@@ -156,3 +159,4 @@ if (!function_exists('addons_url')) {
         return Route::buildUrl("addons/{$addons}/{$controller}/{$action}", $param)->suffix($suffix)->domain($domain);
     }
 }
+
