@@ -153,7 +153,7 @@ if (!function_exists('addons_url')) {
             $url = Str::studly($url);
             $url = parse_url($url);
             if (isset($url['scheme'])) {
-                $addons = $url['scheme'];
+                $addons = strtolower($url['scheme']);
                 $controller = $url['host'];
                 $action = trim($url['path'], '/');
             } else {
@@ -162,6 +162,7 @@ if (!function_exists('addons_url')) {
                 $action = array_pop($route);
                 $controller = array_pop($route) ?: $request->controller();
             }
+            $controller = Str::snake((string)$controller);
 
             /* 解析URL带的参数 */
             if (isset($url['query'])) {

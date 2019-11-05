@@ -76,12 +76,10 @@ abstract class Addons
      */
     final protected function getName()
     {
-        $name = $this->request->addon;
-        if (empty($name)) {
-            $class = get_class($this);
-            list(, $name, ) = explode('\\', $class);
-            $this->request->addon = $name;
-        }
+        $class = get_class($this);
+        list(, $name, ) = explode('\\', $class);
+        $this->request->addon = $name;
+
         return $name;
     }
 
