@@ -1,6 +1,6 @@
 {
     "name": "zz-studio/think-addons",
-    "description": "The ThinkPHP5.1 Addons Package",
+    "description": "The ThinkPHP6 Addons Package",
     "license": "Apache-2.0",
     "authors": [
         {
@@ -10,7 +10,8 @@
     ],
     "minimum-stability": "dev",
     "require": {
-        "topthink/framework": "5.1.*"
+        "php": ">=7.1.0",
+        "topthink/framework": "^6.0"
     },
     "autoload": {
         "psr-4": {
@@ -19,5 +20,12 @@
         "files": [
             "src/helper.php"
         ]
+    },
+    "extra": {
+        "think": {
+            "services": [
+                "think\\addons\\Service"
+            ]
+        }
     }
 }
