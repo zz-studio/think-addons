@@ -10,10 +10,7 @@
 // +----------------------------------------------------------------------
 
 use think\facade\App;
-<<<<<<< HEAD
-=======
 use think\facade\Env;
->>>>>>> 3703616320253813a3c60f67928a95c581bbc113
 use think\facade\Hook;
 use think\facade\Config;
 use think\Loader;
@@ -87,11 +84,7 @@ Hook::add('app_init', function () {
         return;
     }
     // 当debug时不缓存配置
-<<<<<<< HEAD
     $config = App::isDebug() ? [] : (array)cache('addons');
-=======
-    $config = App::isDebug() ? [] : cache('addons');
->>>>>>> 3703616320253813a3c60f67928a95c581bbc113
     if (empty($config)) {
         // 读取插件目录及钩子列表
         $base = get_class_methods("\\think\\Addons");
