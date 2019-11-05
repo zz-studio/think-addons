@@ -1,114 +1,137 @@
 <?php
-// +----------------------------------------------------------------------
-// | thinkphp5 Addons [ WE CAN DO IT JUST THINK IT ]
-// +----------------------------------------------------------------------
-// | Copyright (c) 2016 http://www.zzstudio.net All rights reserved.
-// +----------------------------------------------------------------------
-// | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
-// +----------------------------------------------------------------------
-// | Author: Byron Sampson <xiaobo.sun@qq.com>
-// +----------------------------------------------------------------------
+/**
+ * +----------------------------------------------------------------------
+ * | think-addons [thinkphp6]
+ * +----------------------------------------------------------------------
+ *  .--,       .--,             | FILE: Addons.php
+ * ( (  \.---./  ) )            | AUTHOR: byron
+ *  '.__/o   o\__.'             | EMAIL: xiaobo.sun@qq.com
+ *     {=  ^  =}                | QQ: 150093589
+ *     /       \                | DATETIME: 2019/11/5 14:47
+ *    //       \\               |
+ *   //|   .   |\\              |
+ *   "'\       /'"_.-~^`'-.     |
+ *      \  _  /--'         `    |
+ *    ___)( )(___               |-----------------------------------------
+ *   (((__) (__)))              | 高山仰止,景行行止.虽不能至,心向往之。
+ * +----------------------------------------------------------------------
+ * | Copyright (c) 2019 http://www.zzstudio.net All rights reserved.
+ * +----------------------------------------------------------------------
+ */
+
 namespace think;
 
-use think\facade\Env;
-use think\addons\Controller;
+use think\App;
+use think\helper\Str;
+use think\facade\Config;
+use think\facade\View;
 
-/**
- * 插件基类
- * Class Addns
- * @author Byron Sampson <xiaobo.sun@qq.com>
- * @package think\addons
- */
-abstract class Addons extends Controller
+abstract class Addons
 {
-    // 当前错误信息
-    protected $error;
+    // app 容器
+    protected $app;
+    // 请求对象
+    protected $request;
+    // 当前插件标识
+    protected $name;
+    // 插件路径
+    protected $addons_path;
+    // 视图模型
+    protected $view;
 
     /**
-     * $info = [
-     *  'name'          => 'Test',
-     *  'title'         => '测试插件',
-     *  'description'   => '用于thinkphp5的插件扩展演示',
-     *  'status'        => 1,
-     *  'author'        => 'byron sampson',
-     *  'version'       => '0.1'
-     * ]
+     * 插件构造函数
+     * Addons constructor.
+     * @param \think\App $app
      */
-    public $info = [];
-    public $addons_path = '';
-    public $config_file = '';
+    public function __construct(App $app)
+    {
+        $this->app = $app;
+        $this->request = $app->request;
+        $this->name = $this->request->addon;
+        $this->addons_path = $this->request->addons_path . $this->name . DIRECTORY_SEPARATOR;
+        $config = Config::get('view');
+        $config['view_path'] = $this->addons_path . 'view' . DIRECTORY_SEPARATOR;
+        $this->view = View::instance($config);
+
+        // 控制器初始化
+        $this->initialize();
+    }
 
     // 初始化
     protected function initialize()
-    {
-        // 获取当前插件目录
-        $this->addons_path = Env::get('addons_path') . $this->getName() . DIRECTORY_SEPARATOR;
-
-        // 重新定义模板的根目录
-        if ($this->view) {
-            $this->view->config('view_path', $this->addons_path . 'view' . DIRECTORY_SEPARATOR);
-        }
-    }
+    {}
 
     /**
-     * 获取插件信息
-     * @return array
+     * 加载模板输出
+     * @param string $template
+     * @param array $vars           模板文件名
+     * @return false|mixed|string   模板输出变量
+     * @throws \think\Exception
      */
-    final public function getInfo()
+    protected function fetch($template = '', $vars = [])
     {
-        $info_path = $this->addons_path . 'info.ini';
-        if (is_file($info_path)) {
-            $info = parse_ini_file($info_path);
-            if (is_array($info)) {
-                $this->info = array_merge($this->info, $info);
-            }
-        }
-        return $this->info;
+        return $this->view->fetch($template, $vars);
     }
 
     /**
-     * 获取插件的配置数组
-     * @param string $name 可选模块名
-     * @return array|mixed|null
-     */
-    final public function getConfig($parse = false)
-    {
-        $name = $this->getName();
-        return get_addons_config($name, $parse);
-    }
-
-    /**
-     * 获取当前模块名
-     * @return string
-     */
-    final public function getName()
-    {
-        $data = array_reverse(explode('\\', get_class($this)));
-        return $data[1];
-    }
-
-    /**
-     * 检查配置信息是否完整
-     * @return bool
-     */
-    final public function checkInfo()
-    {
-        $info_check_keys = ['name', 'title', 'description', 'status', 'author', 'version'];
-        foreach ($info_check_keys as $value) {
-            if (!array_key_exists($value, $this->getInfo())) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * 获取当前错误信息
+     * 渲染内容输出
+     * @access protected
+     * @param  string $content 模板内容
+     * @param  array  $vars    模板输出变量
      * @return mixed
      */
-    public function getError()
+    protected function display($content = '', $vars = [])
     {
-        return $this->error;
+        return $this->view->display($content, $vars);
+    }
+
+    /**
+     * 模板变量赋值
+     * @access protected
+     * @param  mixed $name  要显示的模板变量
+     * @param  mixed $value 变量的值
+     * @return $this
+     */
+    protected function assign($name, $value = '')
+    {
+        $this->view->assign([$name => $value]);
+
+        return $this;
+    }
+
+    /**
+     * 初始化模板引擎
+     * @access protected
+     * @param  array|string $engine 引擎参数
+     * @return $this
+     */
+    protected function engine($engine)
+    {
+        $this->view->engine($engine);
+
+        return $this;
+    }
+
+    /**
+     * 插件基础信息
+     * @return array
+     */
+    public function getInfo()
+    {
+        $info = Config::get("{$this->name}_info");
+        if ($info) {
+            return $info;
+        }
+
+        $info_file = $this->addons_path . 'info.ini';
+        if (is_file($info_file)) {
+            $info = parse_ini_file($info_file, true, INI_SCANNER_TYPED) ?: [];
+            $info['url'] = addons_url();
+        }
+        Config::set($info, "{$this->name}_info");
+
+        return isset($info) ? $info : [];
     }
 
     //必须实现安装
@@ -117,4 +140,3 @@ abstract class Addons extends Controller
     //必须卸载插件方法
     abstract public function uninstall();
 }
-    
