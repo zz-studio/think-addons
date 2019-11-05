@@ -20,7 +20,7 @@
         },
         "files": [
             "src/helper.php"
-        ],
+        ]
     },
     "extra": {
         "think": {

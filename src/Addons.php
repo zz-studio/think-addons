@@ -172,7 +172,7 @@ abstract class Addons
         }
         $config_file = $this->addon_path . 'config.php';
         if (is_file($config_file)) {
-            $temp_arr = include $config_file;
+            $temp_arr = (array)include $config_file;
             foreach ($temp_arr as $key => $value) {
                 $config[$value['name']] = $value['value'];
             }
