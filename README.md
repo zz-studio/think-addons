@@ -2,7 +2,7 @@
 The ThinkPHP 5.1 Addons Package
 
 ## 安装
-> composer require zz-studio/think-addons
+> composer require zzstudio/think-addons:dev-master
 
 ## 配置
 ### 公共配置
@@ -30,7 +30,7 @@ return [
         'testhook'=>'test' // 键为钩子名称，用于在业务中自定义钩子处理，值为实现该钩子的插件，
                     // 多个插件可以用数组也可以用逗号分割
     ]
-]
+];
 ```
 
 ## 创建插件
@@ -44,7 +44,7 @@ return [
 > 在addons目录中创建test目录
 
 ### 创建钩子实现类
-> 在test目录中创建Test.php类文件。注意：类文件首字母需大写
+> 在test目录中创建 Widget.php 类文件。注意：类文件首字母需大写
 
 ```
 <?php
@@ -56,7 +56,7 @@ use think\Addons;
  * 插件测试
  * @author byron sampson
  */
-class Test extends Addons	// 需继承think\addons\Addons类
+class Widget extends Addons	// 需继承think\addons\Addons类
 {
 	// 该插件的基础信息
     public $info = [
@@ -130,9 +130,9 @@ return [
 如果插件中需要有链接或提交数据的业务，可以在插件中创建controller业务文件，
 要访问插件中的controller时使用addon_url生成url链接。
 如下：
-<a href="{:addon_url('test://Action/link')}">link test</a>
+<a href="{:addons_url('test://Action/link')}">link test</a>
 格式为：
-test为插件名，Action为controller中的类名，link为controller中的方法
+test为插件名，Action为controller中的类名[多级控制器可以用.分割]，link为controller中的方法
 ```
 
 ### 创建插件的controller文件
@@ -180,7 +180,7 @@ class Action extends Controller
 ```
 
 ### php业务中使用
-> 只要是thinkphp5正常流程中的任意位置均可以使用
+> 只要是thinkphp5.1正常流程中的任意位置均可以使用
 
 ```
 hook('testhook', ['id'=>1])
