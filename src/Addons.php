@@ -161,9 +161,10 @@ abstract class Addons
 
     /**
      * 获取配置信息
-     * @return mixed
+     * @param bool $type 是否获取完整配置
+     * @return array|mixed
      */
-    final public function getConfig()
+    final public function getConfig($type = false)
     {
         $config = Config::get($this->addon_config, []);
         if ($config) {
@@ -172,6 +173,9 @@ abstract class Addons
         $config_file = $this->addon_path . 'config.php';
         if (is_file($config_file)) {
             $temp_arr = (array)include $config_file;
+            if ($type) {
+                return $temp_arr;
+            }
             foreach ($temp_arr as $key => $value) {
                 $config[$key] = $value['value'];
             }
