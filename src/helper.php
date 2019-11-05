@@ -72,7 +72,7 @@ if (!function_exists('get_addons_info')) {
             return [];
         }
 
-        return $addon->getInfo($name);
+        return $addon->getInfo();
     }
 }
 

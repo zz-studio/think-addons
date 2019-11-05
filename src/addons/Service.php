@@ -208,4 +208,22 @@ class Service extends \think\Service
 
         return $addons_path;
     }
+
+    /**
+     * 获取插件的配置信息
+     * @param string $name
+     * @return array
+     */
+    public function getAddonsConfig($name = '')
+    {
+        if (empty($name)) {
+            $name = $this->app->request->addon;
+        }
+        $addon = get_addons_instance($name);
+        if (!$addon) {
+            return [];
+        }
+
+        return $addon->getConfig();
+    }
 }
