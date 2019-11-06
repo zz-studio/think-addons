@@ -140,7 +140,7 @@ abstract class Addons
      */
     final public function getInfo()
     {
-        $info = Config::get($this->addon_info);
+        $info = Config::get($this->addon_info, []);
         if ($info) {
             return $info;
         }
