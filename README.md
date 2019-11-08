@@ -6,11 +6,17 @@ The ThinkPHP 6 Addons Package
 
 ## 配置
 
-### 快速生成配置
+### 生成配置
+
+系统安装后会自动在 config 目录中生成 addons.php 的配置文件，
+如果系统未生成可在命令行执行
+
 ```php
-在命令行执行
 php think addons:config 
 ```
+
+快速生成配置文件
+
 ### 公共配置
 ```php
 'addons'=>[
