@@ -57,7 +57,7 @@ abstract class Addons
         $this->addon_path = $app->addons->getAddonsPath() . $this->name . DIRECTORY_SEPARATOR;
         $this->addon_config = "addon_{$this->name}_config";
         $this->addon_info = "addon_{$this->name}_info";
-        $this->view = View::engine('Think');
+        $this->view = clone View::engine('Think');
         $this->view->config([
             'view_path' => $this->addon_path . 'view' . DIRECTORY_SEPARATOR
         ]);
