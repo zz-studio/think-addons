@@ -97,14 +97,13 @@ class Service extends \think\Service
             $hooks = (array) Config::get('addons.hooks', []);
             // 初始化钩子
             foreach ($hooks as $key => $values) {
-                $key = Str::snake($key);
                 if (is_string($values)) {
                     $values = explode(',', $values);
                 } else {
                     $values = (array) $values;
                 }
                 $hooks[$key] = array_filter(array_map(function ($v) use ($key) {
-                    return [get_addons_class($v), Str::camel($key)];
+                    return [get_addons_class($v), $key];
                 }, $values));
             }
             Cache::set('hooks', $hooks);
