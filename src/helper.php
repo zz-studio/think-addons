@@ -53,6 +53,7 @@ if (!function_exists('hook')) {
      */
     function hook($event, $params = null, bool $once = false)
     {
+        $event = Str::snake($event);
         $result = Event::trigger($event, $params, $once);
 
         return join('', $result);
