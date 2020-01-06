@@ -42,11 +42,14 @@ class Service extends \think\Service
         $this->registerRoutes(function (Route $route) {
             // 路由脚本
             $execute = '\\think\\addons\\Route::execute';
-            // 获取中间件配置
-            $middleware = (array) Config::get('addons.middleware', []);
-            $middleware[] = [Addons::class, null];
+
+            // 注册插件公共中间件
+            if (is_file($this->app->addons->getAddonsPath() . 'middleware.php')) {
+                $this->app->middleware->import(include $this->app->addons->getAddonsPath() . 'middleware.php', 'route');
+            }
+
             // 注册控制器路由
-            $route->rule("addons/:addon/[:controller]/[:action]", $execute)->middleware($middleware);
+            $route->rule("addons/:addon/[:controller]/[:action]", $execute)->middleware(Addons::class);
             // 自定义路由
             $routes = (array) Config::get('addons.route', []);
             foreach ($routes as $key => $val) {

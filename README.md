@@ -30,7 +30,6 @@ php think addons:config
 	],
     'route' => [],
     'service' => [],
-    'middleware' => [],
 ];
 ```
 或者在\config目录中新建`addons.php`,内容为：
