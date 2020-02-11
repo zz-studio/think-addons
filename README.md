@@ -2,7 +2,7 @@
 The ThinkPHP 6 Addons Package
 
 ## 安装
-> composer require slog-ltd/think-addons
+> composer require slogltd/think-addons
 
 ## 配置
 
