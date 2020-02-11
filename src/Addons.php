@@ -151,14 +151,64 @@ abstract class Addons
         $info_file = $this->addon_path . 'info.ini';
         if (is_file($info_file)) {
             $_info = parse_ini_file($info_file, true, INI_SCANNER_TYPED) ?: [];
-            $_info['url'] = addons_url();
-            $info = array_merge($_info, $info);
+            $info = array_merge($info, $_info);
         }
         Config::set($info, $this->addon_info);
 
         return isset($info) ? $info : [];
     }
 
+    /**
+     * 修改插件信息
+     * @return bool
+     */
+    public function setInfoIni(array $array)
+    {
+        $info_file = $this->addon_path . 'info.ini';
+        $this->save_ini_file($array,$info_file);
+    }
+
+    /**
+     * 数组转ini，保存到文件
+     * @param array $array 是否获取完整配置
+     * @param string $file 文件路径
+     * @param int $i 递归索引
+     * @return array|mixed
+     */
+    private function save_ini_file($array, $file='', $i = 0){
+        $strTop="";
+        $str="";
+        foreach ($array as $k => $v){
+			if (is_array($v)) {
+            	if ($i < 1) {
+                    $str.=str_repeat(" ",$i*2)."[$k]\r\n";
+                    $str.=$this->save_ini_file($v, "", $i+1);
+                } else {
+					foreach ($v as $m => $n){
+						if(is_string($n)||is_numeric($n)||is_bool($n)||is_null($n)){
+                    		$str.=str_repeat(" ",$i*2).$k.'['.$m.'] = '.$n."\r\n";
+						}else{
+						
+						}
+					}
+                }
+			}else{
+				if($i==0){
+					$strTop.="$k = $v\r\n";
+				}else {
+					$str.=str_repeat(" ",$i*2)."$k = $v\r\n";	
+				}
+			}
+        }
+        $phpstr = ";<?PHP\r\n;/*\r\n".$strTop.$str.";*/\r\n;?>";
+        if ($file) {
+            // 最终返回
+            return file_put_contents($file,$phpstr);
+        } else {
+            // 递归返回
+            return $str;
+        }
+    }
     /**
      * 获取配置信息
      * @param bool $type 是否获取完整配置
