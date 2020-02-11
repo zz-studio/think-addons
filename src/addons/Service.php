@@ -25,7 +25,7 @@ class Service extends \think\Service
         $this->addons_path = $this->getAddonsPath();
         // 加载系统语言包
         Lang::load([
-            $this->app->getRootPath() . '/vendor/zzstudio/think-addons/src/lang/zh-cn.php'
+            $this->app->getRootPath() . '/vendor/slog-ltd/think-addons/src/lang/zh-cn.php'
         ]);
         // 自动载入插件
         $this->autoload();
