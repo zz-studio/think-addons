@@ -159,13 +159,24 @@ abstract class Addons
     }
 
     /**
-     * 修改插件信息
+     * 快速设置info.ini
      * @return bool
      */
-    public function setInfoIni(array $array)
+    public function setInfo(array $array)
+    {
+        $_info = $this->getInfo();
+        $info = array_merge($_info, $array);
+        return $this->setInfoIni($info);
+    }
+
+    /**
+     * 修改插件ini文件
+     * @return bool
+     */
+    public function setInfoIni(array $info)
     {
         $info_file = $this->addon_path . 'info.ini';
-        $this->save_ini_file($array,$info_file);
+        return $this->save_ini_file($info,$info_file);
     }
 
     /**
