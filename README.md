@@ -118,6 +118,18 @@ class Plugin extends Addons	// 需继承think\Addons类
 
 }
 ```
+### 修改插件目录下的info.ini文件
+
+可以这样使用
+```php
+$arr = $addon->getInfo();
+$arr['status'] = 0;
+$addon->setInfoIni($arr); // 会删除多余的配置项
+
+// 也可以这样用，只修改配置项
+$arr['status'] = 0;
+$addon->setInfo($arr);
+```
 
 ### 创建插件配置文件
 > 在test目录中创建config.php类文件，插件配置文件可以省略。
