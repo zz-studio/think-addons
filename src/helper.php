@@ -124,7 +124,7 @@ if (!function_exists('get_addons_class')) {
                 $namespace = '\\addons\\' . $name . '\\controller\\' . $class;
                 break;
             default:
-                $namespace = '\\addons\\' . $name . '\\Plugin';
+                $namespace = '\\addons\\' . $name . '\\' . ucfirst($name);
         }
 
         return class_exists($namespace) ? $namespace : '';

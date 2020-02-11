@@ -60,7 +60,7 @@ return [
 > 在addons目录中创建test目录
 
 ### 创建钩子实现类
-> 在test目录中创建 Plugin.php 类文件。注意：类文件首字母需大写
+> 在test目录中创建 Test.php 类文件。注意：类文件首字母需大写
 
 ```php
 <?php
@@ -72,7 +72,7 @@ use think\Addons;
  * 插件测试
  * @author byron sampson
  */
-class Plugin extends Addons	// 需继承think\Addons类
+class Test extends Addons	// 需继承think\Addons类
 {
     // 该插件的基础信息
     public $info = [
