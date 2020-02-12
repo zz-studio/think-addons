@@ -32,6 +32,9 @@
             }
         }
     },
+    "config": {
+        "optimize-autoloader": true
+    },
     "scripts" : {
         "post-install-cmd": [
             "php think addons:config"

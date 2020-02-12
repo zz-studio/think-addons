@@ -175,3 +175,41 @@ if (!function_exists('addons_url')) {
     }
 }
 
+if (!function_exists('get_addon_list')) {
+    /**
+     * 获取所有插件列表
+     * @return array
+     */
+    function get_addon_list() {
+        $addonPath = app()->getRootPath(). '\/addons\/';
+        //获取插件列表数据
+        $results = scandir($addonPath);
+        $list = [];
+        foreach ($results as $name) {
+
+            if ($name === '.' or $name === '..')
+                continue;
+            if (is_file($addonPath . $name))
+                continue;
+            $addonDir = $addonPath . $name . DIRECTORY_SEPARATOR;
+            if (!is_dir($addonDir))
+                continue;
+
+            if (!is_file($addonDir . ucfirst($name) . '.php'))
+                continue;
+            $class = get_addons_class($name);
+            if (!class_exists($class)) {
+                continue;
+            }
+            $info = get_addons_instance($name);
+            $info_file = $addonDir . 'config.php';
+            if (!is_file($info_file)){
+                $info->status = 0;
+            }else{
+                $info->status = 1;
+            }
+            $list[] = $info->info;
+        }
+        return $list;
+    }
+}
