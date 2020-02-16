@@ -41,15 +41,22 @@ class Route
         $app = app();
         $request = $app->request;
 
+       
         Event::trigger('addons_begin', $request);
 
         if (empty($addon) || empty($controller) || empty($action)) {
             throw new HttpException(500, lang('addon can not be empty'));
         }
+        if (strpos($controller, '.')) {
+            $pos              = strrpos($controller, '.');
+            $controller = substr($controller, 0, $pos) . '.' . Str::studly(substr($controller, $pos + 1));
+        } else {
+            $controller = Str::studly($controller);
+        }
 
-        $request->addon = $addon;
-        // 设置当前请求的控制器、操作
-        $request->setController($controller)->setAction($action);
+        $request
+            ->setController($controller)
+            ->setAction($action);
 
         // 获取插件基础信息
         $info = get_addons_info($addon);
@@ -62,6 +69,7 @@ class Route
 
         // 监听addon_module_init
         Event::trigger('addon_module_init', $request);
+
         $class = get_addons_class($addon, 'controller', $controller);
         if (!$class) {
             throw new HttpException(404, lang('addon controller %s not found', [Str::studly($controller)]));

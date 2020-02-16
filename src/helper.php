@@ -181,7 +181,7 @@ if (!function_exists('get_addon_list')) {
      * @return array
      */
     function get_addon_list() {
-        $addonPath = app()->getRootPath(). '\/addons\/';
+        $addonPath = app()->getRootPath(). 'addons' . DIRECTORY_SEPARATOR;
         //获取插件列表数据
         $results = scandir($addonPath);
         $list = [];
@@ -201,14 +201,18 @@ if (!function_exists('get_addon_list')) {
             if (!class_exists($class)) {
                 continue;
             }
-            $info = get_addons_instance($name);
+            $addon = get_addons_instance($name);
+            if (!$addon) {
+                continue;
+            }
+            $arr = [];
+            $arr['info'] = $addon->getInfo();
+            $arr['config'] = $addon->getConfig(true);
             $info_file = $addonDir . 'config.php';
             if (!is_file($info_file)){
-                $info->status = 0;
-            }else{
-                $info->status = 1;
+                $arr['info']['status'] = 0;
             }
-            $list[] = $info->info;
+            $list[] = $arr;
         }
         return $list;
     }
