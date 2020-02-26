@@ -121,7 +121,7 @@ if (!function_exists('get_addons_class')) {
         }
         switch ($type) {
             case 'controller':
-                $namespace = '\\addons\\' . $name . '\\controller\\' . $class;
+                $namespace = '\\addons\\' . $name . '\\controller\\' . ucfirst($class);
                 break;
             default:
                 $namespace = '\\addons\\' . $name . '\\' . ucfirst($name);
@@ -215,5 +215,31 @@ if (!function_exists('get_addon_list')) {
             $list[] = $arr;
         }
         return $list;
+    }
+}
+
+if (!function_exists('create_config')) {
+    /**
+     * 安装时-生成插件配置文件
+     * @return bool
+     */
+    function create_config($config){
+        $name="config.php";
+        $config_file = app()->getRootPath() . 'addons' . DIRECTORY_SEPARATOR . $config['name'] . DIRECTORY_SEPARATOR . $name;
+        
+        // 如果文件存在则已经安装成功
+        if(is_file($config_file) && file_exists($config_file)){
+            return false;
+        }
+        $config=var_export($config, true);
+        $content =<<<EOT
+<?php
+return {$config};
+EOT;
+        $result=file_put_contents($config_file,$content);
+        if($result===false){
+            return false;
+        }
+        return true;
     }
 }
