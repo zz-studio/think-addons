@@ -28,11 +28,7 @@ Route::group('addons', function () {
         return 'error addons';
     }
     // 请求位置
-    $path = ltrim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
-    $ext = pathinfo($path, PATHINFO_EXTENSION);
-    if ($ext) {
-        $path = substr($path, 0, strlen($path) - (strlen($ext) + 1));
-    }
+    $path = request()->pathinfo();
     $pathinfo = explode('/', $path);
     // 路由地址
     if ($pathinfo[0] == 'addons' && isset($pathinfo[2])) {
@@ -42,6 +38,9 @@ Route::group('addons', function () {
         $className = ucfirst(array_pop($route));
         array_push($route, $className);
         $controller = join('\\', $route);
+        if (Config::get('controller_suffix')) {
+            $controller .= Config::get('controller_suffix');
+        }
         $type = array_shift($route);
         // 生成view_path
         $view_path = Env::get('addons_path') . $module . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR;
