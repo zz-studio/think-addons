@@ -41,7 +41,7 @@ class Service extends \think\Service
     {
         $this->registerRoutes(function (Route $route) {
             // 路由脚本
-            $execute = '\\think\\addons\\Route::execute';
+            $execute = '\\think\\addons\\Route@execute';
             // 注册控制器路由
             $route->rule("addons/:addon/[:controller]/[:action]", $execute)
                 ->middleware(Addons::class);
