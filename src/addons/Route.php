@@ -38,11 +38,11 @@ class Route
         $app = app();
         $request = $app->request;
 
-        Event::trigger('addons_begin', $request);
-
-        $addon = $request->route('addons');
+        $addon = $request->route('addon');
         $controller = $request->route('controller');
         $action = $request->route('action');
+
+        Event::trigger('addons_begin', $request);
 
         if (empty($addon) || empty($controller) || empty($action)) {
             throw new HttpException(500, lang('addon can not be empty'));
