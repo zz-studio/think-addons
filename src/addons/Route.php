@@ -54,10 +54,10 @@ class Route
 
         // 获取插件基础信息
         $info = get_addons_info($addon);
-        if (!$info) {
+        if (!$info && !is_array($info)) {
             throw new HttpException(404, lang('addon %s not found', [$addon]));
         }
-        if (!$info['status']) {
+        if (isset($info['status']) && !$info['status']) {
             throw new HttpException(500, lang('addon %s is disabled', [$addon]));
         }
 
