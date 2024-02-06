@@ -33,6 +33,8 @@ class Service extends \think\Service
         $this->loadEvent();
         // 加载插件系统服务
         $this->loadService();
+        // 加载插件命令
+        $this->loadCommand();
         // 绑定插件容器
         $this->app->bind('addons', Service::class);
     }
@@ -196,6 +198,32 @@ class Service extends \think\Service
             }
         }
         Config::set($config, 'addons');
+    }
+
+    /**
+     * 加载插件命令
+     */
+    private function loadCommand()
+    {
+        $results = scandir($this->addons_path);
+        foreach ($results as $name) {
+            if ($name === '.' or $name === '..') {
+                continue;
+            }
+            if (is_file($this->addons_path . $name)) {
+                continue;
+            }
+            $addonDir = $this->addons_path . $name . DIRECTORY_SEPARATOR;
+            if (!is_dir($addonDir)) {
+                continue;
+            }
+            $command_file = $addonDir . 'command.php';
+            if (is_file($command_file)) {
+                $commands = include_once $command_file;
+                if (is_array($commands))
+                    $this->commands($commands);
+            }
+        }
     }
 
     /**
