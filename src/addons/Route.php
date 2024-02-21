@@ -39,8 +39,8 @@ class Route
         $request = $app->request;
 
         $addon = $request->route('addon');
-        $controller = $request->route('controller');
-        $action = $request->route('action', 'index');
+        $controller = $request->route('controller', 'index');
+        $action = $request->route('action', 'index') ?: 'index';
 
         Event::trigger('addons_begin', $request);
 
