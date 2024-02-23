@@ -74,7 +74,11 @@ class Route
         Config::set($config, 'view');
 
         // 生成控制器对象
-        $instance = new $class($app);
+        try {
+            $instance = new $class($app);
+        } catch (\Exception $e) {
+            throw new HttpException(404, lang('addon controller %s not found', [Str::studly($controller)]));
+        }
         $vars = [];
         if (is_callable([$instance, $action])) {
             // 执行操作方法
@@ -82,6 +86,9 @@ class Route
         } elseif (is_callable([$instance, '_empty'])) {
             // 空操作
             $call = [$instance, '_empty'];
+            $vars = [$action];
+        } elseif (is_callable([$instance, '__call'])) {
+            $call = [$instance, '__call'];
             $vars = [$action];
         } else {
             // 操作不存在
